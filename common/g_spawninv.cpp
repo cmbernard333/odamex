@@ -32,6 +32,7 @@
 #include "cmdlib.h"
 
 EXTERN_CVAR(g_spawninv);
+EXTERN_CVAR(sv_keepweapons);
 
 extern const char* weaponnames[];
 
@@ -799,27 +800,34 @@ END_COMMAND(spawninv)
  */
 void G_GiveSpawnInventory(player_t& player)
 {
-	spawnInventory_t& inv = ::gSpawnInv;
+	const spawnInventory_t& inv = ::gSpawnInv;
 
 	player.health = inv.health;
 	player.armorpoints = inv.armorpoints;
 	player.armortype = inv.armortype;
-	player.readyweapon = player.pendingweapon = inv.readyweapon;
-	for (size_t i = 0; i < inv.weaponowned.size(); i++)
-		player.weaponowned[i] = inv.weaponowned[i];
-	player.ammo = inv.ammo;
+	// When respawning, playerstate is PST_REBORN in the server
+	// and PST_DEAD in the client. Use PST_ENTER for consistency across both.
+	if (!sv_keepweapons || player.playerstate == PST_ENTER)
+	{
+		player.readyweapon = player.pendingweapon = inv.readyweapon;
+		for (size_t i = 0; i < inv.weaponowned.size(); i++)
+		{
+			player.weaponowned[i] = inv.weaponowned[i];
+		}
+		player.ammo = inv.ammo;
+	}
 
 	if (inv.berserk)
 	{
 		player.powers[pw_strength] = INV_BERSERK_TIME;
 	}
 
-	if (inv.backpack)
+	if (inv.backpack && !player.backpack)
 	{
 		player.backpack = true;
-		for (size_t i = 0; i < player.maxammo.size(); i++)
+		for (int & i : player.maxammo)
 		{
-			player.maxammo[i] *= 2;
+			i *= 2;
 		}
 	}
 

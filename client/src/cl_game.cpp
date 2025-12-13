@@ -96,6 +96,7 @@ void	CL_QuitCommand();
 fixed_t P_TickWeaponBobX();
 fixed_t P_TickWeaponBobY();
 
+EXTERN_CVAR (g_resetinvonexit)
 EXTERN_CVAR (sv_skill)
 EXTERN_CVAR (novert)
 EXTERN_CVAR (sv_monstersrespawn)
@@ -104,6 +105,7 @@ EXTERN_CVAR (sv_respawnsuper)
 EXTERN_CVAR (sv_weaponstay)
 EXTERN_CVAR (sv_keepkeys)
 EXTERN_CVAR (sv_sharekeys)
+EXTERN_CVAR (sv_keepweapons)
 EXTERN_CVAR (co_nosilentspawns)
 EXTERN_CVAR (in_autosr50)
 
@@ -1237,37 +1239,48 @@ void G_PlayerFinishLevel (player_t &player)
 // Called after a player dies
 // almost everything is cleared and initialized
 //
-void G_PlayerReborn (player_t &p) // [Toke - todo] clean this function
+void G_PlayerReborn (player_t &player) // [Toke - todo] clean this function
 {
 	size_t i;
-	for (i = 0; i < NUMAMMO; i++)
+	if (bool reset_inventory = !sv_keepweapons && !g_resetinvonexit;
+	    reset_inventory || player.playerstate == PST_ENTER)
 	{
-		p.maxammo[i] = maxammo[i];
-		p.ammo[i] = 0;
+		for (i = 0; i < NUMAMMO; i++)
+		{
+			player.maxammo[i] = maxammo[i];
+			player.ammo[i] = 0;
+		}
+		for (i = 0; i < NUMWEAPONS; i++)
+		{
+			player.weaponowned[i] = false;
+		}
+		player.backpack = false;
 	}
-	for (i = 0; i < NUMWEAPONS; i++)
-		p.weaponowned[i] = false;
 
-	if (!sv_keepkeys && !sv_sharekeys)
-		P_ClearPlayerCards(p);
+	if (!sv_keepkeys && !sv_sharekeys) {
+		P_ClearPlayerCards(player);
+	}
 
-	P_ClearPlayerPowerups(p);
+	P_ClearPlayerPowerups(player);
 
 	for (i = 0; i < NUMTEAMS; i++)
-		p.flags[i] = false;
-	p.backpack = false;
+	{
+		player.flags[i] = false;
+	}
 
-	G_GiveSpawnInventory(p);
+	G_GiveSpawnInventory(player);
 
-	p.usedown = p.attackdown = true;	// don't do anything immediately
-	p.playerstate = PST_LIVE;
-	p.weaponowned[NUMWEAPONS] = true;
+	player.usedown = player.attackdown = true;	// don't do anything immediately
+	player.playerstate = PST_LIVE;
+	player.weaponowned[NUMWEAPONS] = true;
 
-	if (!p.spectator)
-		p.cheats = 0; // Reset cheat flags
+	if (!player.spectator)
+	{
+		player.cheats = 0; // Reset cheat flags
+	}
 
-	p.death_time = 0;
-	p.tic = 0;
+	player.death_time = 0;
+	player.tic = 0;
 }
 
 //

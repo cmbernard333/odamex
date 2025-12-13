@@ -47,10 +47,12 @@ void	G_DoNewGame (void);
 void	G_DoCompleted (void);
 void	G_DoWorldDone (void);
 
+EXTERN_CVAR (g_resetinvonexit)
 EXTERN_CVAR (sv_maxplayers)
 EXTERN_CVAR (sv_timelimit)
 EXTERN_CVAR (sv_keepkeys)
 EXTERN_CVAR (sv_sharekeys)
+EXTERN_CVAR (sv_keepweapons)
 EXTERN_CVAR (co_nosilentspawns)
 EXTERN_CVAR (sv_fastmonsters)
 EXTERN_CVAR (sv_freelook)
@@ -216,47 +218,54 @@ void SV_SendPlayerInfo(player_t& player);
 // Called after a player dies
 // almost everything is cleared and initialized
 //
-void G_PlayerReborn (player_t &p) // [Toke - todo] clean this function
+void G_PlayerReborn (player_t &player) // [Toke - todo] clean this function
 {
 	size_t i;
-	for (i = 0; i < NUMAMMO; i++)
+	if (bool reset_inventory = !sv_keepweapons && !g_resetinvonexit;
+		reset_inventory || player.playerstate == PST_ENTER)
 	{
-		p.maxammo[i] = maxammo[i];
-		p.ammo[i] = 0;
+		for (i = 0; i < NUMAMMO; i++)
+		{
+			player.maxammo[i] = maxammo[i];
+			player.ammo[i] = 0;
+		}
+		for (i = 0; i < NUMWEAPONS; i++)
+		{
+			player.weaponowned[i] = false;
+		}
+		player.backpack = false;
 	}
-	for (i = 0; i < NUMWEAPONS; i++)
-		p.weaponowned[i] = false;
 	if (!sv_keepkeys && !sv_sharekeys)
 	{
 		for (i = 0; i < NUMCARDS; i++)
-			p.cards[i] = false;
+			player.cards[i] = false;
 	}
 
 	// That said, if keys are found between a player's death and respawn, resync them.
 	if (sv_sharekeys)
 	{
 		for (i = 0; i < NUMCARDS; i++)
-			p.cards[i] = keysfound[i];
+			player.cards[i] = keysfound[i];
 	}
 
 	for (i = 0; i < NUMPOWERS; i++)
-		p.powers[i] = false;
+		player.powers[i] = false;
 	for (i = 0; i < NUMTEAMS; i++)
-		p.flags[i] = false;
-	p.backpack = false;
+		player.flags[i] = false;
+	player.backpack = false;
 
-	G_GiveSpawnInventory(p);
+	G_GiveSpawnInventory(player);
 
-	p.usedown = p.attackdown = true;	// don't do anything immediately
-	p.playerstate = PST_LIVE;
-	p.doreborn = false;
-	p.weaponowned[NUMWEAPONS] = true;
+	player.usedown = player.attackdown = true;	// don't do anything immediately
+	player.playerstate = PST_LIVE;
+	player.doreborn = false;
+	player.weaponowned[NUMWEAPONS] = true;
 
-	if (!p.spectator)
-		p.cheats = 0; // Reset cheat flags
+	if (!player.spectator)
+		player.cheats = 0; // Reset cheat flags
 
-	p.death_time = 0;
-	p.tic = 0;
+	player.death_time = 0;
+	player.tic = 0;
 }
 
 //

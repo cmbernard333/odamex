@@ -104,7 +104,7 @@ bool CL_PlayerJustTeleported(player_t* player);
 void CL_QuitAndTryDownload(const OWantFile& missing_file);
 void CL_ResyncWorldIndex();
 void CL_SpectatePlayer(player_t& player, bool spectate);
-void G_PlayerReborn(player_t& p); // [Toke - todo] clean this function
+void G_PlayerReborn(player_t& player); // [Toke - todo] clean this function
 void P_DestroyButtonThinkers();
 void P_ExplodeMissile(AActor* mo);
 void P_PlayerLeavesGame(player_s* player);
