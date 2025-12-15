@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <array>
 #include <list>
 #include <queue>
 
@@ -85,6 +86,12 @@ typedef enum
 
 } playerstate_t;
 
+constexpr std::array<const char*, 9> playerstate_names = {"CONTACT","DOWNLOAD","SPECTATE", "STEALTH_SPECTATE","LIVE","DEAD","REBORN","DISCONNECT","ENTER"};
+
+inline const char* playerstate_name(playerstate_t playerstate)
+{
+	return playerstate_names[playerstate];
+}
 
 //
 // Player internal flags, for cheats and debug.

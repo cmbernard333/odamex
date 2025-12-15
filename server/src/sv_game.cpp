@@ -235,6 +235,7 @@ void G_PlayerReborn (player_t &player) // [Toke - todo] clean this function
 		}
 		player.backpack = false;
 	}
+
 	if (!sv_keepkeys && !sv_sharekeys)
 	{
 		for (i = 0; i < NUMCARDS; i++)

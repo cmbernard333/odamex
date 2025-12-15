@@ -807,6 +807,7 @@ void G_GiveSpawnInventory(player_t& player)
 	player.armortype = inv.armortype;
 	// When respawning, playerstate is PST_REBORN in the server
 	// and PST_DEAD in the client. Use PST_ENTER for consistency across both.
+	// repeat: player goes from PST_ENTER -> PST_REBORN -> PST_DEAD
 	if (!sv_keepweapons || player.playerstate == PST_ENTER)
 	{
 		player.readyweapon = player.pendingweapon = inv.readyweapon;
@@ -815,6 +816,24 @@ void G_GiveSpawnInventory(player_t& player)
 			player.weaponowned[i] = inv.weaponowned[i];
 		}
 		player.ammo = inv.ammo;
+	}
+
+	std::string p_state_name = playerstate_name(static_cast<playerstate_t>(player.playerstate));
+
+	DPrintFmt("{}: G_GiveSpawnInventory:: Player State: {}\n",
+		clientside ? "Client" : "Server",
+		p_state_name);
+
+	// when a player dies, if sv_keepweapons is set to 0, set the ammo to half
+	if (player.playerstate == PST_DEAD && sv_keepweapons == 1)
+	{
+		PrintFmt(
+			"Player \"{}\" is respawning. sv_keepweapons is \"{}\". Halfing ammo...",
+			player.userinfo.netname, sv_keepweapons.str());
+		for (int &ammo_amt : player.ammo)
+		{
+			ammo_amt *= 0.5;
+		}
 	}
 
 	if (inv.berserk)
