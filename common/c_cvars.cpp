@@ -174,7 +174,9 @@ void cvar_t::ForceSet(const char* valstr)
 
 		// perform rounding to nearest integer for integral types
 		if (integral_type)
+		{
 			valf = std::round(valf);
+		}
 
 		valf = clamp(valf, m_MinValue, m_MaxValue);
 
