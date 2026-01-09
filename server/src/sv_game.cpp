@@ -263,7 +263,9 @@ void G_PlayerReborn (player_t &player) // [Toke - todo] clean this function
 	player.weaponowned[NUMWEAPONS] = true;
 
 	if (!player.spectator)
+	{
 		player.cheats = 0; // Reset cheat flags
+	}
 
 	player.death_time = 0;
 	player.tic = 0;

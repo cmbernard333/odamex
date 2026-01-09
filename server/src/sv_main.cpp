@@ -3298,9 +3298,13 @@ void SV_SetPlayerSpec(player_t &player, bool setting, bool silent)
 		SV_JoinPlayer(player, silent);
 	}
 	else if (setting && !player.spectator)
+	{
 		SV_SpecPlayer(player, silent);
+	}
 	else if (setting && player.spectator && player.QueuePosition > 0)
+	{
 		SV_RemovePlayerFromQueue(&player);
+	}
 }
 
 /**
@@ -3341,7 +3345,9 @@ void SV_JoinPlayer(player_t& player, bool silent)
 
 	// Whatever mobj we had it doesn't matter anymore.
 	if (player.mo)
+	{
 		P_KillMobj(NULL, player.mo, NULL, true);
+	}
 
 	// Fresh joins get fresh player scores.
 	P_ClearPlayerScores(player, SCORES_CLEAR_ALL);
@@ -3387,12 +3393,16 @@ void SV_SpecPlayer(player_t &player, bool silent)
 	// Otherwise a flag carrier will drop his flag at (0,0), which
 	// is often right next to one of the bases...
 	if (sv_gametype == GM_CTF)
+	{
 		CTF_CheckFlags(player);
+	}
 
 	// [tm512 2014/04/18] Avoid setting spectator flags on a dead player
 	// Instead we respawn the player, move him back, and immediately spectate him afterwards
 	if (player.playerstate == PST_DEAD)
+	{
 		G_DoReborn(player);
+	}
 
 	player.spectator = true;
 	for (Players::iterator it = ::players.begin(); it != ::players.end(); ++it)
